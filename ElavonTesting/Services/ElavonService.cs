@@ -11,10 +11,13 @@ namespace ElavonTesting.Services
         private CWS m_cws;
 
         private int cnt = 0;
+
+        private PaymentTransactionResults payment_results;
         public ElavonService(IOptions<ElavonConfig> _elavonConfig)
         {
             elavonConfig = _elavonConfig.Value;
             m_cws = new CWS();
+            payment_results = new PaymentTransactionResults();
         }
 
         public OpenPaymentGatewayResults OpenPaymentGateway()
@@ -80,14 +83,25 @@ namespace ElavonTesting.Services
 
         private void MyPaymentCompleteEvent(PaymentTransactionResults paymentResults, String[] warnings)
         {
-            Console.WriteLine("INSIDE_PAYMENT_COMPLETE");
+            payment_results = paymentResults;
+
+            cnt = 0;
+            Console.WriteLine("VALUE_OF_CNT_RESET: {0}", ++cnt);
+            Console.WriteLine("INSIDE_PAYMENT_COMPLETE_EVENT");
         }
 
         private void MyNotifyCWSEvent(CWSEvent cwsEvent)
         {
+            
             Console.WriteLine("VALUE_OF_CNT: {0}", ++cnt);
-            Console.WriteLine("ChanId: {0}", cwsEvent.chanId);
+            Console.WriteLine("INSIDE_NOTIFY_EVENT_chanId: {0}", cwsEvent.chanId);
         }
+
+        public PaymentTransactionResults GetPaymentResults()
+        {
+            return payment_results;
+        } 
+
 
     }
 }
