@@ -21,6 +21,7 @@ namespace ElavonTesting.Services
             elavonConfig = _elavonConfig.Value;
             m_cws = new CWS();
             payment_results = new PaymentTransactionResults();
+            void_results = new PaymentTransactionResults();
         }
 
         public OpenPaymentGatewayResults OpenPaymentGateway()
@@ -120,7 +121,7 @@ namespace ElavonTesting.Services
 
            PaymentTransactionResults res = new PaymentTransactionResults();
 
-            while(res.RawJSON == null)
+            while(res.RawJSON.Length == 0)
             {
                 res = void_results;
             }
