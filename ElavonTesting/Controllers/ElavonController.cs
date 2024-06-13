@@ -34,18 +34,33 @@ namespace ElavonTesting.Controllers
 
             PaymentTransactionResults p_results = new PaymentTransactionResults();
 
+            
 
-            //Need to do it in a better way this thing is not good
             while(p_results.RawJSON == null)
             {
                 p_results = elavonService.GetPaymentResults();
             }
 
-            return Ok(new
-            {
-                PaymentResult = p_results.RawJSON
-            }) ;
+            var PaymentResult = p_results.RawJSON;
+            if(results.Completed == true) {
+                return Ok(PaymentResult);
             
+            }
+            else
+            {
+                return BadRequest(PaymentResult);
+            }
+            
+        }
+
+        [HttpPost]
+        [Route("Void")]
+        public IActionResult VoidTransaction([FromBody] VoidRequestDto request)
+        {
+            var res = elavonService.VoidTransaction(request);
+
+            
+            return Ok(res.RawJSON);
         }
     }
 }

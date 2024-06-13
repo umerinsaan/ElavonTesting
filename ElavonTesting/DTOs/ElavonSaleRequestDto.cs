@@ -2,6 +2,6 @@
 {
     public class ElavonSaleRequestDto
     {
-        public long amount;
+        public long amount { get; set; }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using CWSWrapper;
 using ElavonTesting.ConfigModels;
+using ElavonTesting.DTOs;
 using Microsoft.Extensions.Options;
 using System.Net.NetworkInformation;
+using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 namespace ElavonTesting.Services
 {
@@ -13,6 +15,7 @@ namespace ElavonTesting.Services
         private int cnt = 0;
 
         private PaymentTransactionResults payment_results;
+        private PaymentTransactionResults void_results;
         public ElavonService(IOptions<ElavonConfig> _elavonConfig)
         {
             elavonConfig = _elavonConfig.Value;
@@ -86,7 +89,7 @@ namespace ElavonTesting.Services
             payment_results = paymentResults;
 
             cnt = 0;
-            Console.WriteLine("VALUE_OF_CNT_RESET: {0}", ++cnt);
+            Console.WriteLine("VALUE_OF_CNT_RESET: {0}", cnt);
             Console.WriteLine("INSIDE_PAYMENT_COMPLETE_EVENT");
         }
 
@@ -101,6 +104,42 @@ namespace ElavonTesting.Services
         {
             return payment_results;
         } 
+
+
+        public PaymentTransactionResults VoidTransaction(VoidRequestDto request)
+        {
+            PaymentArgs p_args = new PaymentArgs();
+
+            p_args.paymentGatewayId = request.paymentGatewayId;
+            p_args.originalTransId = request.originalTransId;
+            p_args.transactionType = TransactionType.VOID;
+            p_args.tenderType = "CARD";
+
+            
+            m_cws.StartPaymentTransaction(p_args, VoidNotifyEvent, VoidPaymentCompleteEvent);
+
+           PaymentTransactionResults res = new PaymentTransactionResults();
+
+            while(res.RawJSON == null)
+            {
+                res = void_results;
+            }
+
+
+            return res;
+
+        }
+
+        public void VoidNotifyEvent(CWSEvent ne)
+        {
+            Console.WriteLine("INSIDE_VOID_NOTIFY_EVENT");
+        }
+
+        public void VoidPaymentCompleteEvent(PaymentTransactionResults results, String[] warnings)
+        {
+            Console.WriteLine("INSIDE_VOID_COMPLETE_EVENT");
+            void_results = results;
+        }
 
 
     }
