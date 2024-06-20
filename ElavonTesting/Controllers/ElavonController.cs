@@ -11,56 +11,43 @@ namespace ElavonTesting.Controllers
     [ApiController]
     public class ElavonController : ControllerBase
     {
-        private ElavonService elavonService;
-        public ElavonController(ElavonService _elavonService) { 
+        private readonly ElavonService elavonService;
+        public ElavonController(ElavonService _elavonService) {
             elavonService = _elavonService;
         }
 
         [HttpPost]
-        [Route("Sale")]
-        public IActionResult SaleTransaction([FromBody] long amount)
+        [Route("Transaction")]
+        public async Task<IActionResult> Transaction([FromBody] TransactionRequestDto request)
         {
+            PaymentArgsDto p_args_dto = elavonService.GetPaymentArgs(request);
 
-            OpenPaymentGatewayResults results = elavonService.OpenPaymentGateway();
-
-            if(results.OpenPaymentData.paymentGatewayId == null)
-            {
-                return BadRequest(new {
-                    ErrorMessage = "PayemntGatewayId is null."
+            PaymentTransactionResults res = new PaymentTransactionResults();
+            
+            if(p_args_dto.errorMessage?.Length > 0) {
+                
+                return BadRequest(new
+                {
+                    errorMessage = p_args_dto?.errorMessage
                 });
-            }
-
-            bool transRes = elavonService.StartSaleTransaction(results.OpenPaymentData.paymentGatewayId, amount);
-
-            PaymentTransactionResults p_results = new PaymentTransactionResults();
-
-            
-
-            while(p_results.RawJSON == null)
-            {
-                p_results = elavonService.GetPaymentResults();
-            }
-
-            var PaymentResult = p_results.RawJSON;
-            if(results.Completed == true) {
-                return Ok(PaymentResult);
-            
             }
             else
             {
-                return BadRequest(PaymentResult);
+                res = await elavonService.StartTransaction(p_args_dto.paymentArgs);
+
+                return Ok(new
+                {
+                    response = res
+                });
             }
-            
         }
 
-        [HttpPost]
-        [Route("Void")]
-        public IActionResult VoidTransaction([FromBody] VoidRequestDto request)
-        {
-            var res = elavonService.VoidTransaction(request);
+        //[HttpPost]
+        //[Route("LinkedRefund")]
 
-            
-            return Ok(res.RawJSON);
-        }
+        //public async Task<IActionResult> LinkedRefund([FromBody] LinkedRefundRequestDto request)
+        //{
+
+        //} 
     }
 }
