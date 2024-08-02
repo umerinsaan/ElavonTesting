@@ -6,7 +6,7 @@
         public string? originalTransId { get; set; }
         public string? paymentGatewayId { get; set; }
         public string? chanId { get; set; }
-        public long amount { get; set; }
+        public double amount { get; set; }
 
     }
 }
