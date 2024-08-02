@@ -163,6 +163,7 @@ namespace ElavonTesting.Services
 
             else if(trans_type == TransactionType.VOID)
             {
+                p_args_dto.paymentArgs.tenderType = TenderType.CARD;
                 if(req.paymentGatewayId != null || req.paymentGatewayId != string.Empty)
                 {
                     p_args_dto.paymentArgs.paymentGatewayId = req.paymentGatewayId;

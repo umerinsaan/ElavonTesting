@@ -37,7 +37,7 @@ namespace ElavonTesting.Controllers
 
                 return Ok(new
                 {
-                    response = res
+                    response = res.RawJSON
                 });
             }
         }
