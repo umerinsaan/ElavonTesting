@@ -22,7 +22,7 @@ namespace ElavonTesting.Controllers
         {
             PaymentArgsDto p_args_dto = elavonService.GetPaymentArgs(request);
 
-            PaymentTransactionResults res = new PaymentTransactionResults();
+            
             
             if(p_args_dto.errorMessage?.Length > 0) {
                 
@@ -33,21 +33,24 @@ namespace ElavonTesting.Controllers
             }
             else
             {
-                res = await elavonService.StartTransaction(p_args_dto.paymentArgs);
+                var res = await elavonService.StartTransaction(p_args_dto.paymentArgs);
 
                 return Ok(new
                 {
-                    response = res.RawJSON
+                    response = res
                 });
             }
         }
 
-        //[HttpPost]
-        //[Route("LinkedRefund")]
-
-        //public async Task<IActionResult> LinkedRefund([FromBody] LinkedRefundRequestDto request)
-        //{
-
-        //} 
+        [HttpPost]
+        [Route("LinkedRefund")]
+        public async Task<IActionResult> LinkedRefund([FromBody] LinkedRefundRequestDto request)
+        {
+            var res = await elavonService.LinkedRefund(request);
+            return Ok(new
+            {
+                response = res
+            });
+        } 
     }
 }

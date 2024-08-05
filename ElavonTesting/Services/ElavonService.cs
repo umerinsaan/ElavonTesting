@@ -20,7 +20,7 @@ namespace ElavonTesting.Services
 
         private PaymentTransactionResults? transactionResults;
 
-        private TaskCompletionSource<PaymentTransactionResults> transaction_tcs;
+        private TaskCompletionSource<TransactionResponseDto>? transaction_tcs;
 
         private string? paymentGatewayId;
         private string? chanId;
@@ -66,16 +66,16 @@ namespace ElavonTesting.Services
 
         }
 
-        public async Task<PaymentTransactionResults> StartTransaction(PaymentArgs p_args)
+        public async Task<TransactionResponseDto> StartTransaction(PaymentArgs p_args)
         {
 
-            transaction_tcs = new TaskCompletionSource<PaymentTransactionResults>();
+            transaction_tcs = new TaskCompletionSource<TransactionResponseDto>();
 
             bool check = m_cws.StartPaymentTransaction(p_args, TransactionNotifyEvent, TransactionCompleteEvent);
 
             if (check == false)
             {
-                return new PaymentTransactionResults();
+                return new TransactionResponseDto();
             }
 
             //while(transactionResults == null){} 
@@ -109,7 +109,17 @@ namespace ElavonTesting.Services
                 }
                 else
                 {
-                    transaction_tcs.SetResult(_transactionResults);
+                    var res = new TransactionResponseDto();
+                    res.transactionType = _transactionResults.PaymentTransactionData?.transactionType;
+                    res.result = _transactionResults.PaymentTransactionData?.result;
+                    res.approved = _transactionResults.PaymentTransactionData?.approved;
+                    res.paymentGatewayId = this.paymentGatewayId;
+                    res.originalTransId = _transactionResults.PaymentTransactionData?.id;
+                    res.chanId = _transactionResults.chanId;
+                    res.cardType = _transactionResults.PaymentTransactionData?.cardType;
+                    res.rawJSONresponse = _transactionResults.RawJSON;
+
+                    transaction_tcs?.SetResult(res);
                 }
             }
             //this.transactionResults = _transactionResults;    
@@ -140,7 +150,7 @@ namespace ElavonTesting.Services
                     return p_args_dto;
                 }
 
-                var amount = req.amount * 100; //because 2000 means 20$
+                var amount = (long)(req.amount * 100); //because 2000 means 20$
 
                 Money money = new Money(Money.CurrencyCodefromString("USD"), amount);
                 p_args_dto.paymentArgs.baseTransactionAmount = money;
@@ -194,10 +204,19 @@ namespace ElavonTesting.Services
 
         }
 
-        //public async Task<PaymentTransactionResults> LinkedRefund(LinkedRefundRequestDto request)
-        //{
-        //    Money amount = new Money()
-        //    bool check = m_cws.StartLinkedRefund(request.paymetGatewayId, request.originalTransId, TenderType.CARD, CardType.CREDIT,)
-        //}
+        public async Task<TransactionResponseDto> LinkedRefund(LinkedRefundRequestDto request)
+        {
+            transaction_tcs = new TaskCompletionSource<TransactionResponseDto>();
+
+            Money amount = new Money(Money.CurrencyCodefromString("USD"), (long)(request.amount * 100));
+            bool check = m_cws.StartLinkedRefund(request.paymetGatewayId, request.originalTransId, request.tenderType, request.cardType, amount, null, TransactionNotifyEvent, TransactionCompleteEvent);
+
+            if(check == false)
+            {
+                return new TransactionResponseDto();
+            }
+
+            return await transaction_tcs.Task;
+        }
     }
 }
