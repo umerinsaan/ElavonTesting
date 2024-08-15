@@ -169,6 +169,8 @@ namespace ElavonTesting.Services
 
                 p_args_dto.paymentArgs.discountAmounts = null;
 
+                p_args_dto.paymentArgs.invoiceNumber = req.invoiceNumber;
+
             }
 
             else if(trans_type == TransactionType.VOID)

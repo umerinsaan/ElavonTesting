@@ -8,5 +8,7 @@
         public string? chanId { get; set; }
         public double amount { get; set; }
 
+        public string? invoiceNumber { get; set; }
+
     }
 }
